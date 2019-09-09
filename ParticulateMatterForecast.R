@@ -4,6 +4,10 @@
 #                                    #
 #         Mehak Shamdasani           #
 #------------------------------------#
+install.packages(
+  c("ggfortify", "changepoint",
+    "strucchange", "ggpmisc")
+)
 library(haven)
 library(forecast)
 library(fma)
@@ -15,8 +19,9 @@ library(ggplot2)
 library(dplyr)
 library(lubridate)
 
+
 # Saving File Locations and Uploading CSV File #
-air_quality <- read.csv("PATH TO /PM_2_5_Raleigh2.csv")
+air_quality <- read.csv("/Users/mehak/Desktop/MSA/FALL2020/TimeSeries/Homework2/PM_2_5_Raleigh2.csv")
 
 #Prepare and Aggregate Data---------------------------------------------------------------------------
 #format dates
@@ -39,12 +44,26 @@ plot(decomp_stl)
 pm2_train= subset(monthly_pm2, end=length(monthly_pm2)-6)
 pm2_valid=subset(monthly_pm2,start=length(monthly_pm2)-5)
 
+#Decompose Training TS Object---------------------------------------------------------------------------
+decomp_stl <- stl(pm2_train, s.window = 7)
+plot(decomp_stl)
+
+#Plot Trend vs Actual TS Data---------------------------------------------------------------------------
+trend_pm2 <- decomp_stl$time.series[,2]
+plot(pm2_train)
+lines(trend_pm2, col="red")
+
+#Plot Seasonally Adjusted vs Actual TS Data---------------------------------------------------------------------------
+seas_pm2<- pm2_train - decomp_stl$time.series[,1]
+plot(pm2_train)
+lines(seas_pm2, col="red")
+
 # Building a Linear Exponential Smoothing Model---------------------------------------------------------------------------
 LES.pm2 <- holt(pm2_train, initial = "optimal", h = 24)
 summary(LES.pm2)
 
 plot(LES.pm2, main = "Monthly PM2.5 Concentration with Linear ESM Forecast", xlab = "Date", ylab = "PM2.5 Concentration")
-abline(v = 1992, col = "red", lty = "dashed")
+#abline(v = 1992, col = "red", lty = "dashed")
 
 autoplot(LES.pm2)+
   autolayer(fitted(LES.pm2),series="Fitted")+ylab("Monthly PM2.5 Concentration with Holt ESM Forecast")
@@ -56,12 +75,18 @@ MAE=mean(abs(error))
 MAPE=mean(abs(error)/abs(pm2_valid))
 #MAPE: 0.2074771
 
+#Calculate RMSE on Validation
+error_sq=(pm2_valid-test.les$mean)^2
+MSE = mean(error_sq)
+RMSE = sqrt(MSE)
+#2.601203
+
 #Build a Linear Damped---------------------------------------------------------------------------
 LDES.pm2 <- holt(pm2_train, initial = "optimal", h = 24, damped = TRUE)
 summary(LDES.pm2)
 
 plot(LDES.pm2, main = "Monthly PM2.5 Concentration with Linear Damped ESM Forecast", xlab = "Date", ylab = "PM2.5 Concentration")
-abline(v = 1992, col = "red", lty = "dashed")
+#abline(v = 1992, col = "red", lty = "dashed")
 
 autoplot(LDES.pm2)+
   autolayer(fitted(LDES.pm2),series="Fitted")+ylab("PM2.5 Concentration")
@@ -72,6 +97,14 @@ error=pm2_valid-test.les_d$mean
 MAE=mean(abs(error))
 MAPE=mean(abs(error)/abs(pm2_valid))
 #MAPE: 0.1906637
+
+#Calculate RMSE on Validation
+error_sq=(pm2_valid-test.les_d$mean)^2
+MSE = mean(error_sq)
+RMSE = sqrt(MSE)
+#2.405117
+
+#Calculate
 
 #Holt-Winters Exponential Smoothing Model---------------------------------------------------------------------------
 #Additive---------------------------------------------------------------------------
@@ -89,7 +122,13 @@ test.hw_a=forecast(HWES.pm2_a,h=6)
 error=pm2_valid-test.hw_a$mean
 MAE=mean(abs(error))
 MAPE=mean(abs(error)/abs(pm2_valid))
-#MAPE = 0.0.2285497
+#MAPE = 0.2285497
+
+#Calculate RMSE on Validation
+error_sq=(pm2_valid-test.hw_a$mean)^2
+MSE = mean(error_sq)
+RMSE = sqrt(MSE)
+#RMSE: 2.324086
 
 #Multiplicative---------------------------------------------------------------------------
 HWES.pm2_m <- hw(pm2_train, seasonal = "multiplicative", initial='optimal')
@@ -107,3 +146,12 @@ error=pm2_valid-test.hw_m$mean
 MAE=mean(abs(error))
 MAPE=mean(abs(error)/abs(pm2_valid))
 #MAPE: 0.2090463
+#MAE:
+
+#Calculate RMSE on Validation
+error_sq=(pm2_valid-test.hw_m$mean)^2
+MSE = mean(error_sq)
+RMSE = sqrt(MSE)
+#RMSE: 2.106654
+
+
