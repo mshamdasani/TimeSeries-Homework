@@ -58,6 +58,32 @@ seas_pm2<- pm2_train - decomp_stl$time.series[,1]
 plot(pm2_train)
 lines(seas_pm2, col="red")
 
+# Building a Single Exponential Smoothing Model---------------------------------------------------------------------------
+SES.pm2 <- ses(pm2_train, initial = "optimal", h = 24)
+summary(SES.pm2)
+
+plot(SES.pm2, main = "Monthly PM2.5 Concentration with Simple ESM Forecast", xlab = "Date", ylab = "PM2.5 Concentration")
+abline(v = 1992, col = "red", lty = "dashed")
+round(accuracy(SES.pm2),2)
+
+autoplot(SES.pm2)+
+  autolayer(fitted(SES.pm2),series="Fitted")+ylab("Monthly PM2.5 Concentration with Simple ESM Forecast")
+
+#Calculate MAPE on Validation
+test.ses=forecast(SES.pm2,h=6)
+error=pm2_valid-test.ses$mean
+MAE=mean(abs(error))
+MAPE=mean(abs(error)/abs(pm2_valid))
+#MAE: 1.888392
+#MAPE: 0.1810493
+
+#Calculate RMSE on Validation
+error_sq=(pm2_valid-test.ses$mean)^2
+MSE = mean(error_sq)
+RMSE = sqrt(MSE)
+#RMSE: 2.287174
+
+
 # Building a Linear Exponential Smoothing Model---------------------------------------------------------------------------
 LES.pm2 <- holt(pm2_train, initial = "optimal", h = 24)
 summary(LES.pm2)
@@ -73,13 +99,14 @@ test.les=forecast(LES.pm2,h=6)
 error=pm2_valid-test.les$mean
 MAE=mean(abs(error))
 MAPE=mean(abs(error)/abs(pm2_valid))
+#MAE: 2.200177
 #MAPE: 0.2074771
 
 #Calculate RMSE on Validation
 error_sq=(pm2_valid-test.les$mean)^2
 MSE = mean(error_sq)
 RMSE = sqrt(MSE)
-#2.601203
+#RMSE:  2.601203
 
 #Build a Linear Damped---------------------------------------------------------------------------
 LDES.pm2 <- holt(pm2_train, initial = "optimal", h = 24, damped = TRUE)
@@ -96,6 +123,7 @@ test.les_d=forecast(LDES.pm2,h=6)
 error=pm2_valid-test.les_d$mean
 MAE=mean(abs(error))
 MAPE=mean(abs(error)/abs(pm2_valid))
+#MAE: 2.008073
 #MAPE: 0.1906637
 
 #Calculate RMSE on Validation
@@ -122,6 +150,7 @@ test.hw_a=forecast(HWES.pm2_a,h=6)
 error=pm2_valid-test.hw_a$mean
 MAE=mean(abs(error))
 MAPE=mean(abs(error)/abs(pm2_valid))
+#MAE: 2.2477
 #MAPE = 0.2285497
 
 #Calculate RMSE on Validation
@@ -145,8 +174,9 @@ test.hw_m=forecast(HWES.pm2_m,h=6)
 error=pm2_valid-test.hw_m$mean
 MAE=mean(abs(error))
 MAPE=mean(abs(error)/abs(pm2_valid))
+#MAE:2.029253
 #MAPE: 0.2090463
-#MAE:
+
 
 #Calculate RMSE on Validation
 error_sq=(pm2_valid-test.hw_m$mean)^2
