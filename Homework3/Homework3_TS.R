@@ -20,7 +20,7 @@ library(dyn)
 library(urca)
 
 # Saving File Locations and Uploading CSV File #
-air_quality <- read.csv("/Users/mehak/Desktop/MSA/FALL2020/TimeSeries/Homework/PM_2_5_Raleigh2.csv")
+air_quality <- read.csv("/PM_2_5_Raleigh2.csv")
 
 #Prepare and Aggregate Data---------------------------------------------------------------------------
 #format dates
@@ -47,7 +47,7 @@ for(i in 0:2){
 }
 
 #Another way to do this using the 'urca' package
-df <- ur.df(monthly_pm2, type = c("none"), lags=0)
+df <- ur.df(monthly_pm2, type = c("drift"), lags=2)
 summary(df)
 
 #Correction for  Random Walk (Assuming alpha = 0.01)-----------------------------------------------------------------------
