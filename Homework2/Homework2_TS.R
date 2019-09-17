@@ -21,7 +21,7 @@ library(lubridate)
 
 
 # Saving File Locations and Uploading CSV File #
-air_quality <- read.csv("/Users/mehak/Desktop/MSA/FALL2020/TimeSeries/Homework2/PM_2_5_Raleigh2.csv")
+air_quality <- read.csv("/Users/mehak/Desktop/MSA/FALL2020/TimeSeries/Homework/PM_2_5_Raleigh2.csv")
 
 #Prepare and Aggregate Data---------------------------------------------------------------------------
 #format dates
@@ -39,6 +39,12 @@ monthly_pm2 <- ts(mon_aq$Monthly.Mean.PM2.5.Concentration, start = 2014, frequen
 #Decompose TS Object---------------------------------------------------------------------------
 decomp_stl <- stl(monthly_pm2, s.window = 7)
 plot(decomp_stl)
+
+#If anoyone wants to see the classical decomposition
+a<- decompose(monthly_pm2, type = c("additive"), filter = NULL)
+m<-  decompose(monthly_pm2, type = c("multiplicative"), filter = NULL)
+plot(m)
+plot(a)
 
 #Create Data Split---------------------------------------------------------------------------
 pm2_train= subset(monthly_pm2, end=length(monthly_pm2)-6)
@@ -132,7 +138,6 @@ MSE = mean(error_sq)
 RMSE = sqrt(MSE)
 #2.405117
 
-#Calculate
 
 #Holt-Winters Exponential Smoothing Model---------------------------------------------------------------------------
 #Additive---------------------------------------------------------------------------
